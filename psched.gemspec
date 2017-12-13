@@ -7,9 +7,9 @@ require 'psched/version'
 Gem::Specification.new do |gem|
   gem.name          = "psched"
   gem.version       = Psched::VERSION
-  gem.summary       = %q{TODO: Summary}
-  gem.description   = %q{TODO: Description}
-  gem.license       = "BSD"
+  gem.summary       = %q{Precise scheduling of recurring tasks}
+  gem.description   = %q{Precise scheduling of recurring tasks using semaphores (not supported on Windows!)}
+  gem.license       = "0BSD"
   gem.authors       = ["Paolo Bosetti"]
   gem.email         = "paolo.bosetti@unitn.it"
   gem.homepage      = "https://rubygems.org/gems/psched"
@@ -28,6 +28,7 @@ Gem::Specification.new do |gem|
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
+  gem.add_dependency 'ffi', '~>1.9'
 
   gem.add_development_dependency 'bundler', '~> 1.10'
   gem.add_development_dependency 'rake', '~> 10.0'
