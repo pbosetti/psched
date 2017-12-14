@@ -88,7 +88,10 @@ module PSched
     #   The Task Execution Time
     # @!attribute [r] step
     #   The time step in seconds
-    attr_reader :step, :tet
+    # @!attribute [r] start_time
+    #   The time at the beginning of the current Operation
+    attr_reader :step, :tet, :start_time
+
     # Initializer
     # @param [Numeric] step the timestep in seconds
     def initialize(step)
@@ -124,13 +127,15 @@ module PSched
     # @param [Fixnum,nil] n_iter the maximum number of iterations.
     #   If nil it loops indefinitedly
     # @yieldparam [Fixnum] i the number of elapsed iterations
-    # @yieldparam [Numeric] tet the Task Execution Time of previous step
+    # @yieldparam [Float] t the time elapsed since the beginning of current Operation
+    # @yieldparam [Float] tet the Task Execution Time of previous step
     # @raise [ArgumentError] unless a block is given
     # @raise [RealTimeError] if TET exceeds @step
     def start(n_iter=nil)
+      raise ArgumentError, "Need a block!" unless block_given?
       @active = true
       i = 0
-      raise ArgumentError, "Need a block!" unless block_given?
+      @start_time = Time.now
       Signal.trap(:ALRM) do
         # If there is still a pending step, raises an error containing
         # information about the CURRENT step
@@ -142,7 +147,7 @@ module PSched
         else
           start = Time.now
           @lock = true
-          result = yield(i, @tet)
+          result = yield(i, Time.now - @start_time, @tet)
           i += 1
           self.stop if (n_iter and i >= n_iter)
           self.stop if (result.kind_of? Symbol and result == :stop)
@@ -177,9 +182,9 @@ end
 if $0 == __FILE__ then
   PSched::Operation.prioritize
 
-  op = PSched::Operation.new(0.01)
-  op.start(10) do |i|
-    puts "Ping #{i}"
+  op = PSched::Operation.new(0.5)
+  op.start(10) do |i, t|
+    puts "Ping #{i}: #{t}"
   end
 
   Signal.trap("SIGINT") do
